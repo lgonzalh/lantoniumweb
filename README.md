@@ -1,8 +1,8 @@
 # lantoniumweb
 
-Production website for **Lantonium**, a studio specialized in Android application development. Deployed on Firebase Hosting.
+Production website for **Lantonium**, a studio specialized in Android application development.
 
-**Live:** https://lantonium.web.app
+**Live:** https://lantonium.com
 
 ---
 
@@ -20,7 +20,7 @@ Static multi-page site built without a frontend framework. The build pipeline ha
 | Styling | Vanilla CSS + Bootstrap 5.3.3 |
 | Scripting | Vanilla JavaScript (ES6+) |
 | Build | Node.js — `javascript-obfuscator`, `clean-css` |
-| Hosting | Firebase Hosting |
+| Hosting | Cloud Hosting |
 | Version Control | Git / GitHub |
 
 ---
@@ -66,7 +66,7 @@ lantoniumweb/
 
 ## Local Development
 
-**Prerequisites:** Node.js >= 18, Firebase CLI
+**Prerequisites:** Node.js >= 18
 
 ```bash
 # Install dependencies
@@ -75,8 +75,8 @@ npm install
 # Run build (obfuscate JS + minify CSS)
 node build.js
 
-# Serve locally via Firebase emulator
-firebase serve --only hosting
+# Serve locally
+npx serve public
 ```
 
 Source files live in `src/`. Never edit `public/assets/js/` or `public/assets/css/` directly; they are build artifacts.
@@ -103,17 +103,15 @@ src/css/styles.css ──────► clean-css ─────────�
 # Build artifacts first
 node build.js
 
-# Deploy to Firebase Hosting
-firebase deploy --only hosting
+# Deploy
+npm run deploy
 ```
-
-Firebase project: `docusheetbot` (bound in `.firebaserc`).
 
 ---
 
 ## Security Headers
 
-Configured in `firebase.json` and applied globally:
+Applied globally at the hosting layer:
 
 | Header | Value |
 |---|---|
@@ -141,7 +139,7 @@ git commit -m "feat: <description>"
 git push
 ```
 
-Branch: `main` — tracks `origin/main` at `https://github.com/lgonzalh/lantoniumweb`.
+Branch: `main` tracks `origin/main` at `https://github.com/lgonzalh/lantoniumweb`.
 
 ---
 
