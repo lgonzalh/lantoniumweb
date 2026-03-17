@@ -1,0 +1,27 @@
+{
+  "text": {
+    "hero.title": "lantonium",
+    "hero.subtitle": "Simplifica, automatiza, crece",
+    "docusheetbot.lead": "Automatización impulsada por IA para gestionar documentos y datos desde Android.",
+    "docusheetbot.tech": "IA y automatización como núcleo para reducir tiempos y errores."
+  },
+  "lists": {},
+  "attrs": {
+    "contact.email": {
+      "href": "mailto:lgonzalh@outlook.com"
+    },
+    "hero.image": {
+      "src": "/assets/img/lantonium_logo_black.png"
+    },
+    "brand.logo": {
+      "src": "/assets/img/lantonium_logo_black.png"
+    }
+  },
+  "theme": {
+    "color-primary": "#007FFF",
+    "color-accent": "#f59e0b"
+  },
+  "settings": {
+    "andyCount": "50"
+  }
+}

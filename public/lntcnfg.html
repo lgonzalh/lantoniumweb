@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>LNT CNFG - Editor Visual</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #121212;
+      --bg-surface: #1c1c1c;
+      --bg-elevated: #262626;
+      --text-main: #f5f5f5;
+      --text-muted: #a3a3a3;
+      --border: #333333;
+      --accent: #404040;
+      --accent-hover: #555555;
+    }
+    body {
+      margin: 0; padding: 0;
+      background: var(--bg-base); color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      display: flex; height: 100vh; overflow: hidden;
+    }
+    * { box-sizing: border-box; scrollbar-width: thin; scrollbar-color: var(--accent) transparent; }
+    
+    /* Sidebar */
+    #sidebar {
+      width: 320px; background: var(--bg-surface);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; z-index: 10;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+    }
+    .sidebar-header {
+      padding: 20px; border-bottom: 1px solid var(--border);
+      text-align: center;
+    }
+    .sidebar-header h1 {
+      margin: 0; font-size: 13px; font-weight: 800; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--text-muted);
+    }
+    
+    /* Toolbar */
+    .toolbar { padding: 20px; border-bottom: 1px solid var(--border); }
+    .toolbar label {
+      display: block; font-size: 11px; font-weight: 600; color: var(--text-muted);
+      margin-bottom: 8px; text-transform: uppercase;
+    }
+    .form-select {
+      width: 100%; padding: 10px 12px; margin-bottom: 15px;
+      background: var(--bg-elevated); border: 1px solid var(--border);
+      color: var(--text-main); border-radius: 6px; font-size: 13px;
+      cursor: pointer; outline: none; transition: border-color 0.2s;
+      appearance: none;
+    }
+    .form-select:hover { border-color: var(--accent-hover); }
+    .btn {
+      width: 100%; padding: 12px; font-size: 13px; font-weight: 600;
+      border-radius: 6px; cursor: pointer; transition: all 0.2s;
+      border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-main);
+    }
+    .btn:hover { background: var(--accent); }
+    .btn-primary {
+      background: var(--text-main); color: var(--bg-base); border: none;
+    }
+    .btn-primary:hover { background: #ffffff; transform: translateY(-1px); }
+
+    /* Content Area */
+    .sidebar-content { flex: 1; overflow-y: auto; position: relative; }
+    
+    /* Views */
+    .view { display: none; padding: 20px; }
+    .view.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateX(-5px); } to { opacity: 1; transform: translateX(0); } }
+    
+    .section-title {
+      font-size: 11px; text-transform: uppercase; color: var(--text-muted);
+      margin: 0 0 15px 0; font-weight: 600; letter-spacing: 1px;
+    }
+
+    /* Element List Builder */
+    .element-card {
+      background: var(--bg-elevated); border: 1px solid var(--border);
+      padding: 12px 15px; border-radius: 8px; margin-bottom: 8px;
+      cursor: pointer; transition: all 0.2s ease;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .element-card:hover { border-color: var(--accent-hover); background: var(--accent); }
+    .el-type { font-size: 10px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+    .el-preview { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.4; color: var(--text-main); }
+    
+    /* Editor Panel */
+    .back-btn {
+      background: none; border: none; color: var(--text-muted);
+      font-size: 13px; cursor: pointer; padding: 0; margin-bottom: 20px;
+      display: flex; align-items: center; gap: 6px; font-family: inherit; font-weight: 500;
+    }
+    .back-btn:hover { color: var(--text-main); }
+    
+    .form-group { margin-bottom: 20px; }
+    .form-group label {
+      display: block; font-size: 11px; color: var(--text-muted);
+      margin-bottom: 8px; font-weight: 600; text-transform: uppercase;
+    }
+    .form-control {
+      width: 100%; padding: 12px; background: var(--bg-base);
+      border: 1px solid var(--border); color: var(--text-main);
+      border-radius: 6px; font-size: 13px; font-family: inherit;
+      transition: border-color 0.2s;
+    }
+    textarea.form-control { resize: vertical; min-height: 100px; line-height: 1.5; }
+    .form-control:focus { outline: none; border-color: var(--accent-hover); }
+    
+    .btn-group { display: flex; gap: 8px; }
+    .btn-action {
+      flex: 1; padding: 10px; background: var(--bg-base);
+      border: 1px solid var(--border); color: var(--text-main);
+      border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;
+      transition: all 0.2s; text-align: center;
+    }
+    .btn-action:hover { background: var(--accent); }
+    
+    /* Config Panel specifically */
+    .toggle-switch {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px; background: var(--bg-elevated); border-radius: 6px;
+      border: 1px solid var(--border); font-size: 13px; font-weight: 500;
+    }
+    .switch-btn {
+      width: 36px; height: 20px; background: var(--accent);
+      border-radius: 10px; position: relative; cursor: pointer;
+      transition: background 0.3s;
+    }
+    .switch-btn::after {
+      content: ''; position: absolute; top: 2px; left: 2px;
+      width: 16px; height: 16px; background: #fff; border-radius: 50%;
+      transition: transform 0.3s;
+    }
+    .switch-btn.on { background: var(--text-main); }
+    .switch-btn.on::after { transform: translateX(16px); background: var(--bg-base); }
+
+    .color-picker { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+    .color-swatch {
+      width: 32px; height: 32px; border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.15); cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.1); 
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+    .color-swatch:hover { transform: scale(1.15); border-color: rgba(255, 255, 255, 0.4); z-index: 2; }
+    .color-swatch.active { border-color: #ffffff; box-shadow: 0 0 0 2px var(--accent-hover), 0 4px 12px rgba(0,0,0,0.5); transform: scale(1.1); z-index: 2; }
+
+    /* Workspace */
+    #workspace {
+      flex: 1; display: flex; flex-direction: column;
+      background: #0a0a0a; position: relative;
+    }
+    .workspace-header {
+      height: 60px; background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 20px; font-size: 12px; color: var(--text-muted);
+    }
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px; background: var(--bg-elevated);
+      border-radius: 20px; font-weight: 600;
+    }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #4caf50; }
+    
+    .preview-container {
+      flex: 1; padding: 20px; display: flex; justify-content: center;
+      overflow: hidden;
+    }
+    .iframe-wrapper {
+      width: 100%; max-width: 1200px; height: 100%;
+      background: #fff; border-radius: 8px; overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      border: 1px solid var(--border);
+    }
+    iframe { width: 100%; height: 100%; border: none; }
+    
+    .empty-state {
+      text-align: center; color: var(--text-muted); font-size: 13px;
+      margin-top: 50px; line-height: 1.5;
+    }
+    .instruct { color: var(--text-main); font-weight: 500; }
+  </style>
+</head>
+<body>
+
+  <div id="sidebar">
+    <div class="sidebar-header">
+      <h1>LNT Config</h1>
+    </div>
+    
+    <div class="toolbar">
+      <label>Página a modificar</label>
+      <select id="page-selector" class="form-select">
+        <option value="">Selecciona una página...</option>
+        <option value="index.html">Inicio (index.html)</option>
+        <option value="about.html">Acerca de (about.html)</option>
+        <option value="apps.html">Apps (apps.html)</option>
+        <option value="docusheetbot.html">DocuSheetBot (docusheetbot.html)</option>
+        <option value="localtranscriptor.html">LocalTranscriptor (localtranscriptor.html)</option>
+        <option value="privacy.html">Privacidad (privacy.html)</option>
+      </select>
+      <button id="btn-save" class="btn btn-primary">Guardar Publicación</button>
+    </div>
+
+    <div class="toolbar" style="border-top: none; padding-top: 0;">
+      <label>Ecosistema: Andys</label>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+        <span style="font-size:11px; color:var(--text-muted); font-weight:bold;">Mostrar Ecosistema</span>
+        <div id="btn-toggle-andys-sys" class="switch-btn on"></div>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+        <span style="font-size:11px; color:var(--text-muted); font-weight:bold; white-space:nowrap;">Densidad: <span id="andys-count-lbl">420</span></span>
+        <input type="range" id="val-andys" min="0" max="600" value="420" style="width:100px; height:4px; opacity:0.8; cursor:pointer;">
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px;">
+        <span style="font-size:11px; color:var(--text-muted); font-weight:bold;">Color / Variante</span>
+        <input type="color" id="val-andy-color" value="#a4c639" style="width:40px; height:24px; padding:0; cursor:pointer; background:none; border:none; outline:none;">
+      </div>
+    </div>
+
+    <div class="sidebar-content">
+      
+      <!-- Lista de Nodos -->
+      <div id="view-list" class="view active">
+        <div class="empty-state">
+          Selecciona una página arriba para comenzar a editar.<br><br>
+          <span class="instruct">Toca cualquier elemento directamente en la vista previa para modificarlo.</span>
+        </div>
+        <div id="nodes-container" style="display:none;">
+          <h3 class="section-title">Elementos Interactivos</h3>
+          <div id="dom-tree"></div>
+        </div>
+      </div>
+
+      <!-- Editor de Nodo -->
+      <div id="view-editor" class="view">
+        <button class="back-btn" id="btn-back">← Volver a la estructura</button>
+        
+        <h3 class="section-title" id="editor-title">Propiedades</h3>
+        
+        <div id="prop-text" class="form-group" style="display:none;">
+          <label>Contenido de Texto</label>
+          <textarea id="val-text" class="form-control" placeholder="Escribe aquí..."></textarea>
+        </div>
+        
+        <div id="prop-link" class="form-group" style="display:none;">
+          <label>Destino del Enlace</label>
+          <input type="text" id="val-href" class="form-control" placeholder="/ejemplo.html">
+        </div>
+        
+        <div id="prop-img" class="form-group" style="display:none;">
+          <label>Cargar Archivo o Escribir Ruta</label>
+          <div style="display:flex; gap:4px; margin-bottom:10px;">
+            <input type="text" id="val-src" class="form-control" placeholder="/assets/img/recurso.png" style="flex:1; min-width:0;">
+            <button class="btn-action" id="btn-upload-file" style="padding:0 8px; flex:none; font-size:10px; font-weight:bold; width: auto;" title="Selector de sistema">📁 Examinar...</button>
+            <input type="file" id="sys-file-picker" style="display:none;" accept="image/*,video/*">
+          </div>
+          <div style="display:flex; gap:10px;">
+            <input type="text" id="val-width" class="form-control" placeholder="Ancho (ej: 100%)">
+            <input type="text" id="val-height" class="form-control" placeholder="Alto (ej: auto)">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>Estilo (Basado en la marca)</label>
+          <div id="palette-container" class="color-picker"></div>
+        </div>
+        
+        <div class="form-group">
+          <label>Tipografía</label>
+          <div class="btn-group" style="margin-bottom: 10px;">
+            <button class="btn-action" id="btn-bold">Negrita</button>
+            <button class="btn-action" id="btn-italic">Cursiva</button>
+            <button class="btn-action" id="btn-reset-font">Normal</button>
+          </div>
+          <input type="text" id="val-fontsize" class="form-control" placeholder="Tamaño de fuente (ej: 18px)">
+        </div>
+
+        <div class="form-group">
+          <label>Estructura</label>
+          <div class="btn-group" style="margin-bottom: 15px;">
+            <button class="btn-action" id="btn-move-up">↑ Subir</button>
+            <button class="btn-action" id="btn-move-down">↓ Bajar</button>
+          </div>
+          <div class="toggle-switch">
+            <span>Visibilidad en el sitio</span>
+            <div id="btn-toggle-vis" class="switch-btn on"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="workspace">
+    <div class="workspace-header">
+      <div class="status-badge">
+        <div class="status-dot"></div>
+        Modo Edición Visual
+      </div>
+      <div id="preview-url">/</div>
+    </div>
+    <div class="preview-container">
+      <div class="iframe-wrapper">
+        <iframe id="preview-frame"></iframe>
+      </div>
+    </div>
+  </div>
+
+<script>
+  let siteJson = {};
+  let currentDoc = null;
+  let activeElement = null;
+  let activePath = null;
+  let extractedColors = new Set();
+  
+  const ui = {
+    pageSelector: document.getElementById('page-selector'),
+    frame: document.getElementById('preview-frame'),
+    viewList: document.getElementById('view-list'),
+    viewEditor: document.getElementById('view-editor'),
+    domTree: document.getElementById('dom-tree'),
+    emptyState: document.querySelector('.empty-state'),
+    nodesContainer: document.getElementById('nodes-container'),
+    btnBack: document.getElementById('btn-back'),
+    editorTitle: document.getElementById('editor-title'),
+    palette: document.getElementById('palette-container'),
+    urlDisplay: document.getElementById('preview-url')
+  };
+
+  const nameMapping = {
+    'H1': 'Título Principal', 'H2': 'Secundario', 'H3': 'Subtítulo', 'H4': 'Encabezado P.',
+    'P': 'Párrafo', 'IMG': 'Imagen', 'A': 'Botón/Enlace', 'BUTTON': 'Botón',
+    'SECTION': 'Bloque de Sección', 'DIV': 'Contenedor', 'SPAN': 'Texto en línea'
+  };
+
+  async function init() {
+    try {
+      const res = await fetch('/content/site.json');
+      if (res.ok) {
+        siteJson = await res.json();
+        if (!siteJson.settings) siteJson.settings = {};
+        if (siteJson.settings.andyCount !== undefined) {
+          document.getElementById('val-andys').value = siteJson.settings.andyCount;
+          document.getElementById('andys-count-lbl').textContent = siteJson.settings.andyCount;
+        }
+        if (siteJson.settings.andyColor !== undefined) {
+          document.getElementById('val-andy-color').value = siteJson.settings.andyColor;
+        }
+        if (siteJson.settings.andyVisible !== undefined) {
+          const tgl = document.getElementById('btn-toggle-andys-sys');
+          if (!siteJson.settings.andyVisible) tgl.classList.remove('on');
+          else tgl.classList.add('on');
+        }
+      }
+    } catch (e) {
+      siteJson = { text: {}, attrs: {}, theme: {}, dynamic_overrides: {}, settings: {} };
+    }
+  }
+
+  ui.pageSelector.addEventListener('change', e => {
+    if (e.target.value) loadPage(e.target.value);
+  });
+
+  ui.btnBack.addEventListener('click', () => {
+    switchView('list');
+    activeElement = null;
+    activePath = null;
+    // Remove outlines from iframe
+    if(currentDoc) {
+      currentDoc.querySelectorAll('.lnt-active-edit').forEach(el => {
+        el.classList.remove('lnt-active-edit');
+        el.style.outline = '';
+      });
+    }
+  });
+
+  function switchView(view) {
+    ui.viewList.classList.remove('active');
+    ui.viewEditor.classList.remove('active');
+    if(view === 'list') ui.viewList.classList.add('active');
+    if(view === 'editor') ui.viewEditor.classList.add('active');
+  }
+
+  async function loadPage(pageUrl) {
+    ui.emptyState.style.display = 'none';
+    ui.nodesContainer.style.display = 'block';
+    ui.urlDisplay.textContent = '/' + pageUrl;
+    switchView('list');
+    ui.domTree.innerHTML = '<div style="padding:20px; text-align:center; color:gray;">Cargando...</div>';
+    
+    try {
+      const res = await fetch('/' + pageUrl + '?t=' + Date.now());
+      const html = await res.text();
+      const parser = new DOMParser();
+      currentDoc = parser.parseFromString(html, 'text/html');
+      
+      const base = currentDoc.createElement('base');
+      base.href = window.location.origin + '/';
+      currentDoc.head.prepend(base);
+
+      // Disable links in iframe
+      const links = currentDoc.querySelectorAll('a');
+      links.forEach(l => l.addEventListener('click', e => e.preventDefault()));
+      
+      // Inject Visual Editor Overlay Script
+      const script = currentDoc.createElement('script');
+      script.textContent = `
+        const style = document.createElement('style');
+        style.textContent = 'iframe, video { pointer-events: none !important; }';
+        document.head.appendChild(style);
+
+        document.addEventListener('mouseover', e => {
+          const target = e.target.closest('.lnt-video-overlay') ? e.target.closest('.lnt-video-overlay').previousElementSibling : e.target;
+          const el = target.closest('h1, h2, h3, h4, p, span, img, a, button, .card, iframe, video');
+          if(el && !el.classList.contains('lnt-active-edit') && !el.classList.contains('lnt-ignore-save')) {
+            el.style.outline = '2px dashed #999';
+            el.style.cursor = 'pointer';
+            el.style.transition = 'outline 0.2s';
+          }
+        });
+        document.addEventListener('mouseout', e => {
+          const target = e.target.closest('.lnt-video-overlay') ? e.target.closest('.lnt-video-overlay').previousElementSibling : e.target;
+          const el = target.closest('h1, h2, h3, h4, p, span, img, a, button, .card, iframe, video');
+          if(el && !el.classList.contains('lnt-active-edit') && !el.classList.contains('lnt-ignore-save')) {
+            el.style.outline = '';
+          }
+        });
+        document.addEventListener('click', e => {
+          let target = e.target;
+          if (target.closest('.lnt-add-card')) return; // handled locally
+          
+          if (target.closest('.lnt-video-overlay')) {
+             target = target.closest('.lnt-video-overlay').previousElementSibling;
+          }
+          const el = target.closest('h1, h2, h3, h4, p, span, img, a, button, .card, iframe, video');
+          if(el && !el.classList.contains('lnt-ignore-save')) {
+            e.preventDefault(); e.stopPropagation();
+            document.querySelectorAll('.lnt-active-edit').forEach(aEl => {
+              aEl.classList.remove('lnt-active-edit');
+              aEl.style.outline = '';
+            });
+            el.classList.add('lnt-active-edit');
+            el.style.outline = '3px solid #f5f5f5';
+            
+            // Build path to send to parent
+            let path = []; let t = el;
+            while(t && t.tagName !== 'BODY') {
+              let sel = t.tagName.toLowerCase();
+              if(t.id) { sel += '#' + t.id; path.unshift(sel); break; }
+              let sib = t, nth = 1;
+              while(sib = sib.previousElementSibling) { if(sib.tagName === t.tagName) nth++; }
+              sel += ':nth-of-type('+nth+')';
+              path.unshift(sel);
+              t = t.parentNode;
+            }
+            window.parent.postMessage({ type: 'EL_CLICK', path: path.join(' > ') }, '*');
+          }
+        }, true);
+      `;
+      currentDoc.body.appendChild(script);
+      
+      ui.frame.srcdoc = currentDoc.documentElement.outerHTML;
+      setTimeout(() => {
+          analyzeDOM();
+          if (siteJson.settings && ui.frame.contentWindow && ui.frame.contentWindow.updateAndys) {
+              ui.frame.contentWindow.updateAndys({
+                  count: siteJson.settings.andyCount,
+                  color: siteJson.settings.andyColor,
+                  visible: siteJson.settings.andyVisible
+              });
+          }
+      }, 800);
+    } catch(e) {
+      ui.domTree.innerHTML = '<div style="color:red;">Error: ' + e.message + '</div>';
+    }
+  }
+
+  function analyzeDOM() {
+    ui.domTree.innerHTML = '';
+    extractedColors.clear();
+    
+    const frameDoc = ui.frame.contentDocument || ui.frame.contentWindow.document;
+    const walker = frameDoc.createTreeWalker(frameDoc.body, NodeFilter.SHOW_ELEMENT, null, false);
+    let node;
+    const editableElements = [];
+    
+    while(node = walker.nextNode()) {
+      const style = frameDoc.defaultView.getComputedStyle(node);
+      if (style.color && style.color !== 'rgba(0, 0, 0, 0)') extractedColors.add(rgbToHex(style.color));
+      if (style.backgroundColor && style.backgroundColor !== 'rgba(0, 0, 0, 0)') extractedColors.add(rgbToHex(style.backgroundColor));
+
+      if (['H1','H2','H3','H4','P','SPAN','IMG','A','BUTTON','IFRAME','VIDEO'].includes(node.tagName) || node.classList.contains('card')) {
+        if (!node.classList.contains('lnt-ignore-save')) editableElements.push(node);
+      }
+    }
+    
+    renderPalette();
+    
+    editableElements.forEach(el => {
+      if (!['IMG'].includes(el.tagName) && !el.classList.contains('card') && !el.textContent.trim()) return;
+      
+      let tagType = el.tagName;
+      let label = nameMapping[tagType] || tagType;
+      if (el.classList.contains('card')) label = 'Tarjeta de Contenido';
+      
+      let preview = el.innerText ? el.innerText.substring(0, 30).trim() + '...' : '';
+      if (el.tagName === 'IMG') preview = el.getAttribute('src');
+      if (el.classList.contains('card') && !preview) preview = 'Bloque estructurado...';
+      
+      const card = document.createElement('div');
+      card.className = 'element-card';
+      card.innerHTML = `<span class="el-type">${label}</span><span class="el-preview">${preview}</span>`;
+      
+      card.addEventListener('click', () => {
+        // Trigger click in iframe programmatically to share highlight logic
+        const target = frameDoc.querySelector(getPath(el));
+        if(target) target.click();
+      });
+      ui.domTree.appendChild(card);
+    });
+    
+    injectEditorUI();
+  }
+
+  window.addEventListener('message', e => {
+    if(e.data && e.data.type === 'EL_CLICK') {
+      const frameDoc = ui.frame.contentDocument;
+      const el = frameDoc.querySelector(e.data.path);
+      if(el) openEditor(el, e.data.path);
+    }
+  });
+
+  function getPath(el) {
+    let path = [];
+    while (el && el.nodeType === Node.ELEMENT_NODE && el.tagName !== 'BODY') {
+      let selector = el.tagName.toLowerCase();
+      if (el.id) { selector += '#' + el.id; path.unshift(selector); break; }
+      let sib = el, nth = 1;
+      while (sib = sib.previousElementSibling) { if (sib.tagName === el.tagName) nth++; }
+      selector += ':nth-of-type(' + nth + ')';
+      path.unshift(selector);
+      el = el.parentNode;
+    }
+    return path.join(' > ');
+  }
+
+  function rgbToHex(rgb) {
+    if (/^#/.test(rgb)) return rgb;
+    const m = rgb.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+    if (!m) return rgb;
+    return "#" + (1 << 24 | m[1] << 16 | m[2] << 8 | m[3]).toString(16).slice(1);
+  }
+
+  function renderPalette() {
+    ui.palette.innerHTML = '';
+    extractedColors.forEach(c => {
+      const sw = document.createElement('div');
+      sw.className = 'color-swatch';
+      sw.style.backgroundColor = c;
+      sw.title = c;
+      sw.addEventListener('click', () => applyColor(c, sw));
+      ui.palette.appendChild(sw);
+    });
+  }
+
+  function openEditor(el, path) {
+    activeElement = el;
+    activePath = path;
+    
+    const tag = el.tagName;
+    let label = nameMapping[tag] || tag;
+    if(el.classList.contains('card')) label = 'Tarjeta de Contenido';
+    ui.editorTitle.textContent = 'Editando: ' + label;
+    
+    document.getElementById('prop-text').style.display = 'none';
+    document.getElementById('prop-link').style.display = 'none';
+    document.getElementById('prop-img').style.display = 'none';
+    
+    if(['H1','H2','H3','H4','P','SPAN','A','BUTTON'].includes(tag) || el.classList.contains('card')) {
+      document.getElementById('prop-text').style.display = 'block';
+      document.getElementById('val-text').value = el.innerText || '';
+    }
+    if(tag === 'A') {
+      document.getElementById('prop-link').style.display = 'block';
+      document.getElementById('val-href').value = el.getAttribute('href') || '';
+    }
+    if(tag === 'IMG' || tag === 'IFRAME' || tag === 'VIDEO') {
+      document.getElementById('prop-img').style.display = 'block';
+      document.getElementById('val-src').value = el.getAttribute('src') || '';
+      document.getElementById('val-width').value = el.getAttribute('width') || el.style.width || '';
+      document.getElementById('val-height').value = el.getAttribute('height') || el.style.height || '';
+    }
+    
+    const style = activeElement.ownerDocument.defaultView.getComputedStyle(activeElement);
+    document.getElementById('val-fontsize').value = style.fontSize || '';
+    
+    const isHidden = (style.display === 'none');
+    const toggle = document.getElementById('btn-toggle-vis');
+    if(isHidden) toggle.classList.remove('on');
+    else toggle.classList.add('on');
+    
+    switchView('editor');
+  }
+
+  // Bind live updates
+  document.getElementById('val-text').addEventListener('input', e => {
+    if(!activeElement) return;
+    activeElement.innerText = e.target.value;
+    if (activeElement.getAttribute('data-key')) siteJson.text[activeElement.getAttribute('data-key')] = e.target.value;
+    recordOverride(activePath, { text: e.target.value });
+  });
+
+  document.getElementById('val-href').addEventListener('input', e => {
+    if(!activeElement) return;
+    activeElement.setAttribute('href', e.target.value);
+    recordOverride(activePath, { href: e.target.value });
+  });
+
+  document.getElementById('val-src').addEventListener('input', e => {
+    if(!activeElement) return;
+    activeElement.setAttribute('src', e.target.value);
+    recordOverride(activePath, { src: e.target.value });
+  });
+
+  document.getElementById('val-fontsize').addEventListener('change', e => {
+    if(!activeElement) return;
+    activeElement.style.fontSize = e.target.value;
+    recordOverride(activePath, { style: { fontSize: e.target.value } });
+  });
+
+  function applyColor(hex, swatchEl) {
+    if (!activeElement) return;
+    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+    swatchEl.classList.add('active');
+    activeElement.style.setProperty('color', hex, 'important');
+    recordOverride(activePath, { style: { color: hex } });
+  }
+
+  document.getElementById('btn-bold').addEventListener('click', () => {
+    if(!activeElement) return;
+    activeElement.style.fontWeight = activeElement.style.fontWeight === '700' || activeElement.style.fontWeight === 'bold' ? 'normal' : 'bold';
+    recordOverride(activePath, { style: { fontWeight: activeElement.style.fontWeight } });
+  });
+
+  document.getElementById('btn-italic').addEventListener('click', () => {
+    if(!activeElement) return;
+    activeElement.style.fontStyle = activeElement.style.fontStyle === 'italic' ? 'normal' : 'italic';
+    recordOverride(activePath, { style: { fontStyle: activeElement.style.fontStyle } });
+  });
+  
+  document.getElementById('btn-reset-font').addEventListener('click', () => {
+    if(!activeElement) return;
+    activeElement.style.fontWeight = 'normal';
+    activeElement.style.fontStyle = 'normal';
+    recordOverride(activePath, { style: { fontWeight: 'normal', fontStyle: 'normal' } });
+  });
+  
+  function getContainerHTML(container) {
+    const clone = container.cloneNode(true);
+    clone.querySelectorAll('.lnt-ignore-save').forEach(n => n.remove());
+    clone.querySelectorAll('.lnt-active-edit').forEach(n => {
+      n.classList.remove('lnt-active-edit');
+      n.style.outline = '';
+    });
+    if (clone.classList.contains('lnt-active-edit')) {
+      clone.classList.remove('lnt-active-edit');
+      clone.style.outline = '';
+    }
+    return clone.innerHTML;
+  }
+
+  function recordHtmlDomOverride(el) {
+    const container = el.closest('[data-html]');
+    if (container) {
+      if (!siteJson.html) siteJson.html = {};
+      siteJson.html[container.getAttribute('data-html')] = getContainerHTML(container);
+    }
+  }
+
+  function injectEditorUI() {
+    const frameDoc = ui.frame.contentDocument;
+    
+    // 1. Instalar Overlays protectores para iframes y videos
+    frameDoc.querySelectorAll('iframe, video').forEach(vid => {
+        const parent = vid.parentNode;
+        if(frameDoc.defaultView.getComputedStyle(parent).position === 'static') {
+            parent.style.position = 'relative';
+        }
+        
+        if(vid.nextElementSibling && vid.nextElementSibling.classList.contains('lnt-video-overlay')) return;
+        
+        const overlay = frameDoc.createElement('div');
+        overlay.className = 'lnt-video-overlay lnt-ignore-save';
+        overlay.style.position = 'absolute';
+        overlay.style.top = vid.offsetTop + 'px';
+        overlay.style.left = vid.offsetLeft + 'px';
+        overlay.style.width = vid.offsetWidth + 'px';
+        overlay.style.height = vid.offsetHeight + 'px';
+        overlay.style.background = 'rgba(0,0,0,0.6)';
+        overlay.style.display = 'flex';
+        overlay.style.alignItems = 'center';
+        overlay.style.justifyContent = 'center';
+        overlay.style.zIndex = '10';
+        overlay.style.cursor = 'pointer';
+        
+        const btn = frameDoc.createElement('div');
+        btn.textContent = 'Reemplazar video...';
+        btn.style.background = '#444';
+        btn.style.color = '#fff';
+        btn.style.padding = '10px 20px';
+        btn.style.fontSize = '12px';
+        btn.style.borderRadius = '4px';
+        btn.style.fontWeight = 'bold';
+        btn.style.pointerEvents = 'none'; // click passed to overlay
+        
+        overlay.appendChild(btn);
+        
+        // Ensure iframe respects bounding box
+        vid.style.pointerEvents = 'none';
+
+        vid.parentNode.insertBefore(overlay, vid.nextSibling);
+
+        // Reposition logic on resize
+        const rs = new frameDoc.defaultView.ResizeObserver(() => {
+          overlay.style.top = vid.offsetTop + 'px';
+          overlay.style.left = vid.offsetLeft + 'px';
+          overlay.style.width = vid.offsetWidth + 'px';
+          overlay.style.height = vid.offsetHeight + 'px';
+        });
+        rs.observe(vid);
+    });
+
+    // 2. Insertar card de agregar en Grids
+    frameDoc.querySelectorAll('.grid, [data-html]').forEach(grid => {
+        if(grid.querySelector('.lnt-add-card')) return;
+        
+        const isRow = grid.classList.contains('row');
+        const addCardWrapper = isRow ? frameDoc.createElement('div') : null;
+        
+        if (isRow) {
+            addCardWrapper.className = grid.classList.contains('row-cols-2') ? 'col' : 'col-md-6';
+            addCardWrapper.classList.add('lnt-ignore-save');
+        }
+
+        const addCard = frameDoc.createElement(isRow ? 'div' : 'article');
+        addCard.className = 'card d-flex flex-column h-100 justify-content-center align-items-center lnt-add-card lnt-ignore-save';
+        addCard.style.border = '2px dashed #777';
+        addCard.style.background = 'rgba(255,255,255,0.02)';
+        addCard.style.cursor = 'pointer';
+        addCard.style.minHeight = '300px';
+        addCard.style.transition = 'all 0.2s';
+        
+        if(grid.classList.contains('grid')) {
+          addCard.style.minHeight = '400px'; 
+        } else if(isRow) {
+          addCard.style.minHeight = '200px';
+        }
+        
+        addCard.innerHTML = `
+          <div style="font-size:3rem; color:#777; line-height:1;">+</div>
+          <div style="font-size:0.8rem; color:#777; font-weight:bold; margin-top:10px;">Añadir Elemento</div>
+        `;
+        
+        addCard.onmouseover = () => { addCard.style.borderColor = '#ccc'; addCard.style.background = 'rgba(255,255,255,0.05)'; };
+        addCard.onmouseout = () => { addCard.style.borderColor = '#777'; addCard.style.background = 'rgba(255,255,255,0.02)'; };
+
+        addCard.addEventListener('click', e => {
+            e.stopPropagation(); e.preventDefault();
+            
+            const modal = frameDoc.createElement('div');
+            modal.className = 'lnt-ignore-save';
+            modal.style.position = 'fixed';
+            modal.style.top = '0'; modal.style.left = '0';
+            modal.style.width = '100vw'; modal.style.height = '100vh';
+            modal.style.background = 'rgba(0,0,0,0.85)';
+            modal.style.zIndex = '999999';
+            modal.style.display = 'flex';
+            modal.style.alignItems = 'center';
+            modal.style.justifyContent = 'center';
+            modal.style.fontFamily = 'Inter, sans-serif';
+            
+            modal.innerHTML = `
+              <div style="background:#1c1c1c; padding:35px; border-radius:12px; text-align:center; color:#fff; width:450px; box-shadow:0 10px 40px rgba(0,0,0,0.5); border:1px solid #333;">
+                 <h2 style="margin:0 0 25px 0; font-size:16px; color:#a3a3a3; text-transform:uppercase; letter-spacing:1px;">Insertar Contenido Multimedia</h2>
+                 <div style="display:flex; gap:15px; justify-content:center;">
+                    <button id="btn-m-img" style="flex:1; background:#333; color:#fff; border:1px solid #444; padding:20px 10px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:14px; transition:0.2s;">🖼 Añadir Imagen</button>
+                    <button id="btn-m-vid" style="flex:1; background:#333; color:#fff; border:1px solid #444; padding:20px 10px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:14px; transition:0.2s;">🎬 Añadir Video</button>
+                 </div>
+                 <button id="btn-m-cancel" style="background:transparent; color:#666; border:none; margin-top:25px; text-decoration:none; cursor:pointer; font-size:12px; font-weight:bold; text-transform:uppercase;">Cancelar operación</button>
+              </div>
+            `;
+            
+            frameDoc.body.appendChild(modal);
+            
+            const btnImg = modal.querySelector('#btn-m-img');
+            const btnVid = modal.querySelector('#btn-m-vid');
+            
+            btnImg.onmouseover = () => { btnImg.style.background = '#404040'; btnImg.style.borderColor = '#666'; };
+            btnImg.onmouseout = () => { btnImg.style.background = '#333'; btnImg.style.borderColor = '#444'; };
+            btnVid.onmouseover = () => { btnVid.style.background = '#404040'; btnVid.style.borderColor = '#666'; };
+            btnVid.onmouseout = () => { btnVid.style.background = '#333'; btnVid.style.borderColor = '#444'; };
+            
+            btnImg.onclick = () => {
+                modal.remove();
+                const targetNode = isRow ? addCardWrapper : addCard;
+                window.parent.insertCardAtGrid(grid, 'img', targetNode, isRow);
+            };
+            btnVid.onclick = () => {
+                modal.remove();
+                const targetNode = isRow ? addCardWrapper : addCard;
+                window.parent.insertCardAtGrid(grid, 'vid', targetNode, isRow);
+            };
+            modal.querySelector('#btn-m-cancel').onclick = () => modal.remove();
+        });
+        
+        if(isRow) {
+            addCardWrapper.appendChild(addCard);
+            grid.appendChild(addCardWrapper);
+        } else {
+            grid.appendChild(addCard);
+        }
+    });
+  }
+
+  window.insertCardAtGrid = function(grid, type, addCardNode, isRow) {
+    const frameDoc = ui.frame.contentDocument;
+    
+    let container;
+    
+    if (isRow) {
+       container = frameDoc.createElement('div');
+       container.className = grid.classList.contains('row-cols-2') ? 'col' : 'col-md-6';
+       
+       if (type === 'img') {
+         container.innerHTML = `
+           <img src="https://via.placeholder.com/600x400" class="gallery-img rounded shadow-sm border bg-light" style="width:100%; object-fit:contain;" alt="Nueva Imagen">
+         `;
+       } else if (type === 'vid') {
+         container.innerHTML = `
+           <div class="video-container">
+               <video class="app-video border shadow-sm" controls style="max-width:100%; border-radius:8px;">
+                   <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+                   Módulo de video no soportado.
+               </video>
+           </div>
+         `;
+       }
+    } else {
+       container = frameDoc.createElement('article');
+       container.className = 'card d-flex flex-column h-100';
+       
+       if (type === 'img') {
+         container.innerHTML = `
+           <img src="https://via.placeholder.com/600x400" alt="Placeholder" style="width:100%; height:auto; border-radius:8px; margin-bottom:15px;">
+           <p>Descripción de la imagen añadida. Haz clic aquí para editar.</p>
+         `;
+       } else if (type === 'vid') {
+         container.innerHTML = `
+           <iframe width="100%" height="250" src="https://www.youtube.com/embed/dQw4w9WgXcQ" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border-radius:8px; margin-bottom:15px;"></iframe>
+           <p>Descripción del video. Reemplaza la URL editando este elemento.</p>
+         `;
+       }
+    }
+    
+    grid.insertBefore(container, addCardNode);
+    analyzeDOM(); 
+    recordHtmlDomOverride(container);
+  }
+
+  document.getElementById('btn-move-up').addEventListener('click', () => {
+    if (!activeElement || !activeElement.previousElementSibling) return;
+    activeElement.parentNode.insertBefore(activeElement, activeElement.previousElementSibling);
+    recordOverride(activePath, { move: 'up' });
+  });
+
+  document.getElementById('btn-move-down').addEventListener('click', () => {
+    if (!activeElement || !activeElement.nextElementSibling) return;
+    activeElement.parentNode.insertBefore(activeElement.nextElementSibling, activeElement);
+    recordOverride(activePath, { move: 'down' });
+  });
+
+  document.getElementById('btn-toggle-vis').addEventListener('click', function() {
+    if (!activeElement) return;
+    this.classList.toggle('on');
+    const isVisible = this.classList.contains('on');
+    activeElement.style.display = isVisible ? '' : 'none';
+    recordOverride(activePath, { style: { display: activeElement.style.display } });
+  });
+
+  function recordOverride(selector, changes) {
+    const page = ui.pageSelector.value;
+    if(!siteJson.dynamic_overrides) siteJson.dynamic_overrides = {};
+    if(!siteJson.dynamic_overrides[page]) siteJson.dynamic_overrides[page] = {};
+    if(!siteJson.dynamic_overrides[page][selector]) siteJson.dynamic_overrides[page][selector] = {};
+    
+    // Deep merge for style
+    if(changes.style) {
+      if(!siteJson.dynamic_overrides[page][selector].style) siteJson.dynamic_overrides[page][selector].style = {};
+      Object.assign(siteJson.dynamic_overrides[page][selector].style, changes.style);
+      delete changes.style;
+    }
+    Object.assign(siteJson.dynamic_overrides[page][selector], changes);
+    
+    // Attempt DOM snapshot if possible
+    recordHtmlDomOverride(activeElement);
+  }
+
+  document.getElementById('btn-save').addEventListener('click', () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(siteJson, null, 2));
+    const dlAnchorElem = document.createElement('a');
+    dlAnchorElem.setAttribute("href", dataStr);
+    dlAnchorElem.setAttribute("download", "site.json");
+    dlAnchorElem.click();
+  });
+
+  document.getElementById('btn-upload-file').addEventListener('click', () => {
+    document.getElementById('sys-file-picker').click();
+  });
+  
+  document.getElementById('sys-file-picker').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if(!file) return;
+    
+    // Virtual static structural path assuming it gets dropped on FTP later
+    let virtualPath = "/assets/img/" + file.name;
+    if (file.type.startsWith("video")) {
+        virtualPath = "/assets/mp4/" + file.name;
+    }
+    
+    const tempUrl = URL.createObjectURL(file);
+    if(activeElement) {
+        activeElement.setAttribute('src', tempUrl);
+    }
+    
+    document.getElementById('val-src').value = virtualPath;
+    document.getElementById('val-src').dispatchEvent(new Event('input')); // fires save logic naturally
+  });
+
+  function broadcastAndySettings() {
+    if (ui.frame.contentWindow && ui.frame.contentWindow.updateAndys) {
+      ui.frame.contentWindow.updateAndys({
+          count: siteJson.settings.andyCount,
+          color: siteJson.settings.andyColor,
+          visible: siteJson.settings.andyVisible
+      });
+    }
+  }
+
+  document.getElementById('val-andys').addEventListener('input', e => {
+    const val = e.target.value;
+    document.getElementById('andys-count-lbl').textContent = val;
+    if (!siteJson.settings) siteJson.settings = {};
+    siteJson.settings.andyCount = val;
+    broadcastAndySettings();
+  });
+  
+  document.getElementById('val-andy-color').addEventListener('input', e => {
+    if (!siteJson.settings) siteJson.settings = {};
+    siteJson.settings.andyColor = e.target.value;
+    broadcastAndySettings();
+  });
+  
+  document.getElementById('btn-toggle-andys-sys').addEventListener('click', function() {
+    this.classList.toggle('on');
+    if (!siteJson.settings) siteJson.settings = {};
+    siteJson.settings.andyVisible = this.classList.contains('on');
+    broadcastAndySettings();
+  });
+
+  init();
+</script>
+</body>
+</html>

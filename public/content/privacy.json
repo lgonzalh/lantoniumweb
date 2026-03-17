@@ -1,0 +1,34 @@
+{
+  "text": {
+    "privacy.title": "Política de Privacidad",
+    "privacy.lastUpdate": "Última actualización: Febrero 2026",
+    "privacy.responsable": "Lantonium (en adelante, “Lantonium”, “nosotros”) es responsable de los datos tratados en nuestros sitios web y aplicaciones Android.",
+    "privacy.scope.intro": "Esta política aplica a:",
+    "privacy.collect.title": "3. Datos que recopilamos",
+    "privacy.collect.web.title": "3.1. En el sitio web",
+    "privacy.collect.app.title": "3.2. En aplicaciones Android",
+    "privacy.third.title": "12. Servicios de terceros",
+    "privacy.third.body": "Podemos integrar servicios de Google (Google Play Services) y Firebase (Firestore, Crashlytics, Analytics, Remote Config). Se emplean para funcionalidades, estabilidad y mejoras, bajo contratos como encargados."
+  },
+  "lists": {
+    "privacy.collect.web.items": [
+      "Datos de uso y métricas anónimas (p. ej., páginas visitadas, tiempo de permanencia).",
+      "Información de contacto que nos proporciones voluntariamente (p. ej., correo electrónico).",
+      "Cookies y tecnologías similares, únicamente para fines funcionales y analíticos."
+    ],
+    "privacy.collect.app.items": [
+      "No se requiere la creación de cuentas ni el inicio de sesión para el uso de las aplicaciones.",
+      "Datos funcionales necesarios para operar la app (p. ej., configuración del usuario guardada localmente).",
+      "Métricas de estabilidad y rendimiento (p. ej., fallos anónimos, tiempos de inicio).",
+      "Uso de la cámara para procesamiento de documentos; el procesamiento es local o mediante servicios seguros de Google. No compartimos con terceros sin consentimiento."
+    ]
+  },
+  "attrs": {
+    "privacy.email": {
+      "href": "mailto:lgonzalh@outlook.com"
+    }
+  },
+  "html": {
+    "privacy.fullText": "<p><strong>1.</strong> Responsable del tratamiento: <strong>Lantonium</strong> (en adelante, “<strong>Lantonium</strong>”, “nosotros”) es responsable de los datos tratados en nuestros sitios web y aplicaciones Android. Contacto: <a href='mailto:lgonzalh@outlook.com'>lgonzalh@outlook.com</a>.<br><br><strong>2.</strong> Ámbito de aplicación: Esta política aplica al sitio web corporativo y a las aplicaciones Android publicadas por <strong>Lantonium</strong>, incluyendo Proyectos como DocuSheetBot y LocalTranscriptor.<br><br><strong>3.</strong> Sin cuentas de usuario: Nuestras aplicaciones Android están diseñadas para funcionar sin necesidad de creación de cuenta, registro o inicio de sesión. Por lo tanto, no recopilamos ni almacenamos credenciales de acceso personales.<br><br><strong>4.</strong> Recopilación de datos: En web se registran métricas anónimas de uso y datos de contacto proporcionados voluntariamente. En apps Android se tratan datos funcionales necesarios y diagnósticos técnicos. La cámara se utiliza exclusivamente para el procesamiento solicitado por el usuario; dicho procesamiento es local o mediante servicios seguros. No compartimos datos con terceros sin consentimiento expreso.<br><br><strong>5.</strong> Finalidades: Operar funciones esenciales, mejorar calidad y rendimiento, seguridad y prevención de fraude, y cumplimiento legal.<br><br><strong>6.</strong> Derechos: Dado que no gestionamos cuentas de usuario, no existe el proceso de eliminación de cuenta. Sin embargo, conservas tus derechos de acceso, rectificación o consulta sobre cualquier dato técnico anónimo que pudiera existir. Solicitudes a <a href='mailto:lgonzalh@outlook.com'>lgonzalh@outlook.com</a>.<br><br><strong>7.</strong> Seguridad: Cifrado en tránsito (HTTPS/TLS) y medidas organizativas continuas para reducir riesgos.<br><br><strong>8.</strong> Servicios de terceros: Google Play Services y Firebase (Firestore, Crashlytics, Analytics, Remote Config) se emplean para estabilidad y funciones operativas, actuando como encargados bajo estrictos estándares de seguridad.<br><br><strong>9.</strong> Cambios: Publicaremos las actualizaciones correspondientes en esta página.</p>"
+  }
+}
