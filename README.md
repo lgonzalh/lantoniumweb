@@ -56,8 +56,6 @@ lantoniumweb/
 │       ├── site.json        # Global content: text, attrs, theme tokens
 │       └── privacy.json     # Privacy policy content
 ├── build.js                 # Build script: obfuscate JS, minify CSS
-├── firebase.json            # Hosting config: security headers, clean URLs
-├── .firebaserc              # Firebase project binding
 ├── package.json
 └── .gitignore
 ```
@@ -145,7 +143,7 @@ Branch: `main` tracks `origin/main` at `https://github.com/lgonzalh/lantoniumweb
 
 ## Author
 
-**Luis Gonzalez** — Android Developer / Full Stack Developer / Big Data Analyst  
+**Luis Gonzalez** — Android Developer | Full Stack Developer | Big Data Analyst  
 Bogota, Colombia  
 [lgonzalh@outlook.com](mailto:lgonzalh@outlook.com) · [LinkedIn](https://www.linkedin.com/in/lantonium/)
 
